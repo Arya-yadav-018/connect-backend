@@ -91,11 +91,11 @@ const tokenData = {
 const token = await jwt.sign(tokenData, process.env.JWT_SECRET, {expiresIn : '7d'});
 
 return res.status(200)
-.cookie("token", token, 
-  {maxAge : 7*24*60*60*1000, 
-  httpOnly:true, 
-  secure: false,
-  sameSite: "lax",
+.cookie("token", token, {
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
 })
   .json({
   message : `Welcome back ${user.firstName}`,
@@ -113,20 +113,19 @@ return res.status(500).json({
 }
 }
 
-const logout = async(req, res)=>{
+const logout = async (req, res) => {
 
- res.clearCookie("token", {
-  httpOnly: true,
-  secure: false,
-  sameSite: "lax",
- })
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
 
- return res.status(200).json({
-  success : true,
-  message : 'Logged out successfully',
- })
-
-}
+  return res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+};
 
 
 
