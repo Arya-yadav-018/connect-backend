@@ -2,6 +2,7 @@ const {EditProfileValidator, forgotPasswordValidator} = require("../utils/valida
 const bcrypt = require("bcrypt");
 const User  = require("../models/usermodel");
 const { isFloatLocales } = require("validator");
+const uploadToCloudinary = require("../utils/uploadToCloudinary");
 
 const viewProfile = async(req, res)=>{
   try{
@@ -31,39 +32,57 @@ const viewProfile = async(req, res)=>{
 
 const EditProfile = async(req, res)=>{
 try{
+
 const {isValid, invalidField} = EditProfileValidator(req);
+
 if(!isValid){
     return res.status(400).json({
         message : "Invalid fields in request",
         success : false,
         invalidField,
-    })
+    });
 }
- 
-// get logged in user
+
 const user = req.user;
 
+// Upload image to Cloudinary
+if(req.file){
 
-Object.keys(req.body).forEach((field)=> {
-    user[field] = req.body[field];
-})
+  const result = await uploadToCloudinary(
+    req.file.buffer
+  );
+
+  user.photoUrl = result.secure_url;
+}
+
+// Convert skills string back to array
+if(req.body.skills){
+  req.body.skills = JSON.parse(req.body.skills);
+}
+
+// Update remaining fields
+Object.keys(req.body).forEach((field)=>{
+  user[field] = req.body[field];
+});
 
 await user.save();
 
 return res.status(200).json({
-    message : "Profile updated successfully",
-    success : true,
-    user,
-})
-    
+  message : "Profile updated successfully",
+  success : true,
+  user,
+});
+
 }catch(error){
-console.error("error editing profile: " , error);
-    return res.status(500).json({
-      message: error.message || "Could not update profile",
-      success: false,
-    });
+
+  console.error("error editing profile:", error);
+
+  return res.status(500).json({
+    message: error.message || "Could not update profile",
+    success: false,
+  });
 }
-}
+};
 
 const forgotPassword = async (req, res) => {
 try{
