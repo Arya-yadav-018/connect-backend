@@ -10,7 +10,7 @@ const cors = require('cors');
 
 const app = express(); 
 app.use(cors({
-  origin: ["http://localhost:5173"], // frontend origin
+  origin: ["https://dev-connect-frontend-six.vercel.app","http://localhost:5173"], // frontend origin
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true
 }));
