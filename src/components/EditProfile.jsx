@@ -10,6 +10,7 @@ const backendurl = import.meta.env.VITE_BACKEND_URL;
 const EditProfile = () => {
   const dispatch = useDispatch();
   const user = useSelector((store) => store.user);
+  const [image, setImage] = useState(null);
 
   const [form, setForm] = useState({
     firstName: user?.firstName || "",
@@ -40,21 +41,49 @@ const EditProfile = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.patch(
-        `${backendurl}/api/profile/edit`,
-        { ...form, skills: form.skills.split(",").map((s) => s.trim()) },
-        { withCredentials: true }
-      );
-      if (res.data.success) {
-        dispatch(addUser(res.data.user));
-        toast.success("Profile updated successfully");
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
+  e.preventDefault();
+
+  try {
+    const formData = new FormData();
+
+    formData.append("firstName", form.firstName);
+    formData.append("lastName", form.lastName);
+    formData.append("age", form.age);
+    formData.append("gender", form.gender);
+    formData.append("about", form.about);
+
+    formData.append(
+      "skills",
+      JSON.stringify(
+        form.skills.split(",").map((s) => s.trim())
+      )
+    );
+
+    if (image) {
+      formData.append("photo", image);
     }
-  };
+
+    const res = await axios.patch(
+      `${backendurl}/api/profile/edit`,
+      formData,
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (res.data.success) {
+      dispatch(addUser(res.data.user));
+      toast.success("Profile updated successfully");
+    }
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message || error.message
+    );
+  }
+};
 
   return (
     <>
@@ -138,10 +167,28 @@ const EditProfile = () => {
 
               {/* Photo URL */}
               <div className="ep-field ep-field--full">
-                <label className="ep-label">Photo URL</label>
-                <input className="ep-input" type="text" name="photoUrl"
-                  value={form.photoUrl} onChange={handleChange} placeholder="https://..." />
-              </div>
+  <label className="ep-label">
+    Profile Picture
+  </label>
+
+  <input
+    className="ep-input"
+    type="file"
+    accept="image/*"
+    onChange={(e) => {
+      const file = e.target.files[0];
+
+      if (!file) return;
+
+      setImage(file);
+
+      setForm({
+        ...form,
+        photoUrl: URL.createObjectURL(file),
+      });
+    }}
+  />
+</div>
 
               <button type="submit" className="ep-btn">
                 <span>Save Changes</span>
