@@ -25,7 +25,26 @@ status : {
 }, {timestamps : true});   
 
 
-connectionRequestSchema.index({fromUserId: 1, toUserId: 1});
+connectionRequestSchema.index({
+    fromUserId: 1, 
+    toUserId: 1
+},
+
+  {
+    unique: true
+  }
+
+);
+
+connectionRequestSchema.index({
+  toUserId: 1,
+  status: 1
+});
+
+connectionRequestSchema.index({
+  fromUserId: 1,
+  status: 1
+});
 
 connectionRequestSchema.pre("save", async function(){
     const connectionRequest = this;

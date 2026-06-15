@@ -89,15 +89,22 @@ const userFeed = async(req, res)=>{
             ]
         }).select(USER_SAFE_DATA).skip(skipped).limit(limit);
 
-        res.send(usersToBeShownInFeedForLoggedInUser);
+        return res.status(200).json({
+        success: true,
+         page,
+         limit,
+        data: usersToBeShownInFeedForLoggedInUser,
+          hasMore: usersToBeShownInFeedForLoggedInUser.length === limit,
+});
 
 
 
   }catch(error){
-   return res.json({
-            error : err.message
-        });
-  }
+   return res.status(500).json({
+      success: false,
+      message: error.message
+   });
+}
 }
 
 
